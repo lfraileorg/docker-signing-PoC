@@ -82,6 +82,6 @@ jobs:
         if: ${{ github.event_name != 'pull_request' }}
         run: |
           cosign sign --key cosign.key \
-            ${{ steps.build-and-push.outputs.digest }}
+            ${{ steps.meta.outputs.tags }}@${{ steps.build-and-push.outputs.digest }}
         env:
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
