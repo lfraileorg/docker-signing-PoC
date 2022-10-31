@@ -78,10 +78,4 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           
-      - name: Sign container image
-        if: ${{ github.event_name != 'pull_request' }}
-        run: |
-          cosign sign --key cosign.key \
-            ${{ steps.meta.outputs.tags }}@${{ steps.build-and-push.outputs.digest }}
-        env:
-          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+   
