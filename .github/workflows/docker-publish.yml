@@ -58,7 +58,7 @@ jobs:
         with:
           registry: ${{ env.REGISTRY }}
           username: lfraileacr
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.ACR_TOKEN }}
 
       # Extract metadata (tags, labels) for Docker
       # https://github.com/docker/metadata-action
