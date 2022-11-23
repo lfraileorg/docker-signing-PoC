@@ -50,6 +50,12 @@ jobs:
           # Paste output of `az ad sp create-for-rbac` as value of secret variable: AZURE_CREDENTIALS
           creds: ${{ secrets.AZURE_CREDS }}
           
+      - uses: Azure/get-keyvault-secrets@v1
+        with:
+          keyvault: "encryptionkeystests" # name of key vault in Azure portal
+          secrets: 'test'  # comma separated list of secret keys to fetch from key vault 
+        id: myGetSecretAction # ID for secrets that you will reference
+
       # Login against a Docker registry except on PR
       # https://github.com/docker/login-action
       - name: Log into registry ${{ env.REGISTRY }}
@@ -81,20 +87,14 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
             
-   #   - name: Sign container image
-   #     if: ${{ github.event_name != 'pull_request' }}
-   #     run: |
-   #        cosign sign --key azurekms://encryptionkeystests.vault.azure.net/docker-signing-ec-256 \
-   #        ${{ steps.meta.outputs.tags }}@${{ steps.build-and-push.outputs.digest }}
+      - name: Sign container image
+        if: ${{ github.event_name != 'pull_request' }}
+        run: |
+           cosign sign --key azurekms://encryptionkeystests.vault.azure.net/docker-signing-ec-256 \
+           ${{ steps.meta.outputs.tags }}@${{ steps.build-and-push.outputs.digest }}
        # env:
        #   COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
-       
-      - name: Azure CLI Action
-        uses: Azure/cli@v1
-        with:
-          inlineScript: |
-            cosign sign --key azurekms://encryptionkeystests.vault.azure.net/docker-signing-ec-256 \
-            ${{ steps.meta.outputs.tags }}@${{ steps.build-and-push.outputs.digest }}
+
           
       - name: Write public key to disk (only needed for `cosign sign --key`)
         run: echo "${{ secrets.COSIGN_PUBLIC }}" > cosign.pub
