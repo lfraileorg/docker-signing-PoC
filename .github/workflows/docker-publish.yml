@@ -84,7 +84,7 @@ jobs:
       - name: Sign container image
         if: ${{ github.event_name != 'pull_request' }}
         run: |
-           az keyvault key download --vault-name vault-name -n cosign -e PEM -f mykey.pem       
+           az keyvault key download --vault-name encryptionkeystests -n test-cosign-local -e PEM -f mykey.pem    
            # cosign sign --key azurekms://encryptionkeystests.vault.azure.net/docker-signing-ec-256 \
            # ${{ steps.meta.outputs.tags }}@${{ steps.build-and-push.outputs.digest }}
        # env:
