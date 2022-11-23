@@ -49,12 +49,6 @@ jobs:
         with:
           # Paste output of `az ad sp create-for-rbac` as value of secret variable: AZURE_CREDENTIALS
           creds: ${{ secrets.AZURE_CREDS }}
-          
-      - uses: Azure/get-keyvault-secrets@v1
-        with:
-          keyvault: "encryptionkeystests" # name of key vault in Azure portal
-          secrets: 'test'  # comma separated list of secret keys to fetch from key vault 
-        id: myGetSecretAction # ID for secrets that you will reference
 
       # Login against a Docker registry except on PR
       # https://github.com/docker/login-action
@@ -90,6 +84,7 @@ jobs:
       - name: Sign container image
         if: ${{ github.event_name != 'pull_request' }}
         run: |
+           az keyvault key list --vault-name encryptionkeystests        
            cosign sign --key azurekms://encryptionkeystests.vault.azure.net/docker-signing-ec-256 \
            ${{ steps.meta.outputs.tags }}@${{ steps.build-and-push.outputs.digest }}
        # env:
