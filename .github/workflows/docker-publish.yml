@@ -44,11 +44,11 @@ jobs:
       - name: Setup Docker buildx
         uses: docker/setup-buildx-action@79abd3f86f79a9d68a23c75a09a9a85889262adf
 
-      - name: Azure Login
-        uses: Azure/login@v1.4.6
-        with:
-          # Paste output of `az ad sp create-for-rbac` as value of secret variable: AZURE_CREDENTIALS
-          creds: ${{ secrets.AZURE_CREDS }}
+ #     - name: Azure Login
+ #       uses: Azure/login@v1.4.6
+ #       with:
+ #         # Paste output of `az ad sp create-for-rbac` as value of secret variable: AZURE_CREDENTIALS
+ #         creds: ${{ secrets.AZURE_CREDS }}
 
       # Login against a Docker registry except on PR
       # https://github.com/docker/login-action
@@ -83,19 +83,13 @@ jobs:
             
       - name: Sign container image
         if: ${{ github.event_name != 'pull_request' }}
-        run: |
-           az keyvault key download --vault-name encryptionkeystests -n docker-signing-ec-256 -e PEM -f mykey.pem  
+        run: |           
             cosign sign --key azurekms://encryptionkeystests.vault.azure.net/docker-signing-ec-256 \
             ${{ steps.meta.outputs.tags }}@${{ steps.build-and-push.outputs.digest }}
-       # env:
-       #   COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+        env:
+          AZURE_TENANT_ID: "2c0fa666-bea4-475e-9f7c-f7559aebaf67"
+          AZURE_CLIENT_ID: ${{ secrets.ACR_SP_ID }}
+          AZURE_CLIENT_SECRET: ${{secrets.ACR_SP_SECRET }}
 
           
-      - name: Write public key to disk (only needed for `cosign sign --key`)
-        run: echo "${{ secrets.COSIGN_PUBLIC }}" > cosign.pub
-        
-      - name: Verify signed container image
-        if: ${{ github.event_name != 'pull_request' }}
-        run: |
-           cosign verify --key cosign.pub \
-           ${{ steps.meta.outputs.tags }}@${{ steps.build-and-push.outputs.digest }}
+      
