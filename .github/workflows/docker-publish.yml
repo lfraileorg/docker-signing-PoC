@@ -81,13 +81,20 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
             
-      - name: Sign container image
-        if: ${{ github.event_name != 'pull_request' }}
-        run: |
-           cosign sign --key azurekms://encryptionkeystests.vault.azure.net/docker-signing-ec-256 \
-           ${{ steps.meta.outputs.tags }}@${{ steps.build-and-push.outputs.digest }}
+   #   - name: Sign container image
+   #     if: ${{ github.event_name != 'pull_request' }}
+   #     run: |
+   #        cosign sign --key azurekms://encryptionkeystests.vault.azure.net/docker-signing-ec-256 \
+   #        ${{ steps.meta.outputs.tags }}@${{ steps.build-and-push.outputs.digest }}
        # env:
        #   COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+       
+      - name: Azure CLI Action
+        uses: Azure/cli@v1
+        with:
+          inlineScript: |
+            cosign sign --key azurekms://encryptionkeystests.vault.azure.net/docker-signing-ec-256 \
+            ${{ steps.meta.outputs.tags }}@${{ steps.build-and-push.outputs.digest }}
           
       - name: Write public key to disk (only needed for `cosign sign --key`)
         run: echo "${{ secrets.COSIGN_PUBLIC }}" > cosign.pub
